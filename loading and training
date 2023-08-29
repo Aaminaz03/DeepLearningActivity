@@ -1,0 +1,104 @@
+# importing necessary libraries
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers, models
+import matplotlib.pyplot as plt
+import numpy as np
+
+#loading the data
+image_size = 100, 100
+batchsize = 32
+
+train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
+    "C:/Users/aaminaz/OneDrive/Documents/DLdata2",
+    labels = "inferred",
+    label_mode = 'int',
+    color_mode = "rgb",
+    shuffle = True,
+    validation_split=0.2,
+    subset="both",
+    seed=1337,
+    image_size=image_size,
+    batch_size=batch_size)
+# total files: 1964
+# train_ds: 1572
+# val_ds: 392
+
+class_names = train_ds.class_names 
+print(class_names)
+# the class names are "Apple Braeburn" and "Banana"
+
+# plotting the data
+plt.figure(figsize = (15 ,15))
+for images, labels in train_ds.take(8):#take() returns images in given positional indices along the axis
+    for i in range(14):
+        ax = plt.subplot(4, 4, i + 1)
+        plt.imshow(images[i].numpy().astype("uint8")) #imshow() creates an image from a 2d numpy array
+        # unit8 is an unsigned integer ranging from 0 to +255
+        plt.title(class_names[labels[i]])
+        plt.axis("off")
+
+# processing the data
+AUTOTUNE = tf.data.AUTOTUNE
+
+train_ds = train_ds.cache().prefetch(buffer_size = AUTOTUNE)
+val_ds = val_ds.cache().prefetch(buffer_size = AUTOTUNE)
+
+# adding layers and compling the model
+img_height = 100
+img_width = 100
+num_classes = 2
+
+model = tf.keras.Sequential([
+  tf.keras.layers.Rescaling(1./255),
+  tf.keras.layers.Conv2D(32, 3, activation='relu'),
+  tf.keras.layers.MaxPooling2D(),
+  tf.keras.layers.Conv2D(32, 3, activation='relu'),
+  tf.keras.layers.MaxPooling2D(),
+  tf.keras.layers.Conv2D(32, 3, activation='relu'),
+  tf.keras.layers.MaxPooling2D(),
+  tf.keras.layers.Flatten(),
+  tf.keras.layers.Dense(128, activation='relu'),
+  tf.keras.layers.Dense(num_classes)
+])
+
+model.compile(optimizer = 'adam',
+             loss = 'binary_crossentropy',
+             metrics = ['accuracy'])
+
+#traing the model
+
+model.fit(train_ds,validation_data = val_ds, epochs=10)
+
+# printing the loss and accuracy
+
+(loss, accuracy) = model.evaluate(val_ds)
+print(loss)
+print(accuracy)
+# loss: 0.0
+# accuracy: 0.8086734414100647
+
+model.save('model.h9')
+
+# predicting the output 
+
+predictions = model.predict(val_ds.take(8))
+predictions = predictions.ravel() # converting 2d array to 1d
+predictedLabel = int(predictions[i] >= 0.5)
+
+# plotting the predicted output
+
+i = 0
+fig, ax = plt.subplots(1, 8)
+for image, labels in val_ds.take(8):
+    predictedLabel = int(predictions[i] >= 0.5)
+    ax[i].imshow(images[i].numpy().astype('uint8'))
+    ax[i].axis('off')
+    ax[i].set_title(predictedLabel)
+    i += 1
+
+plt.show() 
+
+# 8 images plotted out of which 7 were predicted correctly
+
+
