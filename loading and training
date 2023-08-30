@@ -1,13 +1,16 @@
 # importing necessary libraries
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers, models
-import matplotlib.pyplot as plt
 import numpy as np
+import os
+import matplotlib.pyplot as plt
+import tensorflow as tf
+import PIL
+import pathlib
+from tensorflow import keras
+from tensorflow.keras import layers
 
 #loading the data
 image_size = 100, 100
-batchsize = 32
+batch_size = 32
 
 train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
     "C:/Users/aaminaz/OneDrive/Documents/DLdata2",
@@ -24,8 +27,9 @@ train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
 # train_ds: 1572
 # val_ds: 392
 
-class_names = train_ds.class_names 
-print(class_names)
+train_classnames = train_ds.class_names
+val_classnames = val_ds.class_names
+
 # the class names are "Apple Braeburn" and "Banana"
 
 # plotting the data
@@ -35,7 +39,7 @@ for images, labels in train_ds.take(8):#take() returns images in given positiona
         ax = plt.subplot(4, 4, i + 1)
         plt.imshow(images[i].numpy().astype("uint8")) #imshow() creates an image from a 2d numpy array
         # unit8 is an unsigned integer ranging from 0 to +255
-        plt.title(class_names[labels[i]])
+        plt.title(train_classnames[labels[i]])
         plt.axis("off")
 
 # processing the data
@@ -76,29 +80,7 @@ model.fit(train_ds,validation_data = val_ds, epochs=10)
 print(loss)
 print(accuracy)
 # loss: 0.0
-# accuracy: 0.8086734414100647
+# accuracy: 0.5086734414100647
 
 model.save('model.h9')
-
-# predicting the output 
-
-predictions = model.predict(val_ds.take(8))
-predictions = predictions.ravel() # converting 2d array to 1d
-predictedLabel = int(predictions[i] >= 0.5)
-
-# plotting the predicted output
-
-i = 0
-fig, ax = plt.subplots(1, 8)
-for image, labels in val_ds.take(8):
-    predictedLabel = int(predictions[i] >= 0.5)
-    ax[i].imshow(images[i].numpy().astype('uint8'))
-    ax[i].axis('off')
-    ax[i].set_title(predictedLabel)
-    i += 1
-
-plt.show() 
-
-# 8 images plotted out of which 7 were predicted correctly
-
 
