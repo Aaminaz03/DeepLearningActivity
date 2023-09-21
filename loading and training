@@ -1,4 +1,3 @@
-# importing necessary libraries
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -6,88 +5,90 @@ import tensorflow as tf
 import PIL
 import pathlib
 from tensorflow import keras
+#from tensorflow.keras import layers
 from tensorflow.keras import layers, models
 
-#loading the data
+import gradio as gr
+
 image_size = 100, 100
 batch_size = 32
 
-train_ds, val_ds = tf.keras.utils.image_dataset_from_directory(
-    "C:/Users/aaminaz/OneDrive/Documents/DLdata2",
-    labels = "inferred",
-    label_mode = 'int',
-    color_mode = "rgb",
-    shuffle = True,
-    validation_split=0.2,
-    subset="both",
-    seed=1337,
-    image_size=image_size,
-    batch_size=batch_size)
-# total files: 1964
-# train_ds: 1572
-# val_ds: 392
+from google.colab import drive
+drive.mount('/content/drive')
 
-train_classnames = train_ds.class_names
-val_classnames = val_ds.class_names
+batch_size = 32
+img_size = (100, 100)
 
-# the class names are "Apple Braeburn" and "Banana"
+train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+    '/content/drive/MyDrive/dldata/dlimg',
+     shuffle=True, batch_size=batch_size, image_size=img_size,
+    validation_split=0.2, subset='training', seed=42
+)
+valid_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+    '/content/drive/MyDrive/dldata/dlimg',
+    shuffle=True, batch_size=batch_size, image_size=img_size,
+    validation_split=0.2, subset='validation', seed=42
+)
+test_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+    '/content/drive/MyDrive/dldata/dlimg',
+    shuffle=True, batch_size=batch_size, image_size=img_size
+)
 
-# plotting the data
+class_names = train_dataset.class_names
+print(class_names)
+
 plt.figure(figsize = (15 ,15))
-for images, labels in train_ds.take(8):#take() returns images in given positional indices along the axis
+for images, labels in train_dataset.take(8):#take() returns images in given positional indices along the axis
     for i in range(14):
         ax = plt.subplot(4, 4, i + 1)
         plt.imshow(images[i].numpy().astype("uint8")) #imshow() creates an image from a 2d numpy array
         # unit8 is an unsigned integer ranging from 0 to +255
-        plt.title(train_classnames[labels[i]])
+        plt.title(class_names[labels[i]])
         plt.axis("off")
 
-# processing the data
-AUTOTUNE = tf.data.AUTOTUNE
+num_classes=2
 
-train_ds = train_ds.cache().prefetch(buffer_size = AUTOTUNE)
-val_ds = val_ds.cache().prefetch(buffer_size = AUTOTUNE)
-
-# adding layers and compling the model
-img_height = 100
-img_width = 100
-num_classes = 2
-
-def cnnmodel(dr = 0.3, lr = 0.001, act = 'relu'):
+def cnnmodel(lr=0.001):
     model = models.Sequential([
         layers.Rescaling(1./255),
-        layers.Conv2D(32, 3, activation=act),
-        layers.MaxPooling2D((2,2)),
-        layers.Dropout(dr),
-        layers.Conv2D(64, 3, activation=act),
-        layers.MaxPooling2D((2,2)),
-        layers.Dropout(dr),
-        layers.Conv2D(128, 3, activation=act),
-        layers.MaxPooling2D((2,2)),
+        layers.Conv2D(32, 3, activation='relu'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.5),
+        layers.Conv2D(64, 3, activation='relu'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(128, 3, activation='relu'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
         layers.Flatten(),
-        layers.Dense(128, activation = act),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.5),  # Adjust dropout rate
         layers.Dense(num_classes)
     ])
-    
-    model.compile(optimizer = keras.optimizers.Adam(lr),
-             loss = 'binary_crossentropy',
-             metrics = ['accuracy'])
-    
+
+    model.compile(optimizer=keras.optimizers.Adam(lr),
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+
     return model
 
-#traing the model
-
 model = cnnmodel()
-epochs = 10
-model.fit(train_ds, epochs= epochs)
+epochs=10
+history = model.fit(train_dataset, epochs=epochs, validation_data=valid_dataset)
 
 # printing the loss and accuracy
-
-
-(loss, accuracy) = model.evaluate(val_ds)
+(loss, accuracy) = model.evaluate(valid_dataset)
 print(loss)
 print(accuracy)
-# loss: 7.66
-# accuracy: 0.5
+# loss: 0.0919
+# accuracy: 0.9184
 
 model.save('model.h9')
+
+def predict_input_image(img):
+  img_4d=img.reshape(-1,100,100,3)
+  prediction=model.predict(img_4d)[0]
+  return {class_names[i]: float(prediction[i]) for i in range(2)}
+
+
