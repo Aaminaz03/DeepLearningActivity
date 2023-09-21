@@ -3,9 +3,9 @@ def predict_input_image(img):
   prediction=model.predict(img_4d)[0]
   return {val_classnames[i]: float(prediction[i]) for i in range(2)}
 
-import gradio as gr
-image = gr.inputs.Image(shape = (100, 100))
-label = gr.outputs.Label(num_top_classes = 2)
-gr.Interface(fn = predict_input_image, inputs = image, outputs = label, interpretation = 'default').launch(debug = 'True')
+image = gr.inputs.Image(shape=(100,100))
+label = gr.outputs.Label(num_top_classes=2)
+iface = gr.Interface(fn=predict_input_image, inputs=image, outputs=label,interpretation='default')
+iface.launch(debug=True,share=True)
 
 # the gradio interface is created
