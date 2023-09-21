@@ -115,11 +115,9 @@ Here, we are printing the class names that are 'Apple Braeburn' and 'Banana' fro
 				 
         	plt.axis("off")
 
-The above few lines of code are intended to display a grid of images from the train_dataset, where each row contains 4 images, and there
+The above few lines of code are intended to display a grid of images from the train_dataset, where each row contains 4 images, and there are a total of 8 rows (32 images in total). 
 
-are a total of 8 rows (32 images in total). It also labels each image with its corresponding class name. This is done to visualize a
-
-portion of the training dataset.
+It also labels each image with its corresponding class name. This is done to visualize a portion of the training dataset.
 
 	num_classes=2
 
@@ -256,10 +254,6 @@ The above code is for training a convolutional neural network (CNN) model using 
   It can be used later for plotting training curves and evaluating model performance.
 
 
-	model.evaluate(test_dataset)
-
-This is used to evaluate the performance of the trained machine-learning model on a test dataset. 
-
 	# Printing the Loss and Accuracy
  
 	(loss, accuracy) = model.evaluate(valid_dataset)
@@ -276,45 +270,18 @@ The .save() is used to save the entire model, including its architecture, traine
 
 can later be loaded and reused without having to retrain it.
 
-	image_batch, label_batch = test_dataset.as_numpy_iterator().next()
  
-	predictions = model.predict_on_batch(image_batch)
-
-	predictions = np.argmax(predictions, axis=-1)
-
-	print('Predictions:\n', predictions)
- 
-	print('Labels:\n', label_batch)
-
-	plt.figure(figsize=(10, 10))
- 
-	for i in range(9):
- 
-  	ax = plt.subplot(3, 3, i + 1)
-	 
-  	plt.imshow(image_batch[i].astype("uint8"))
-	 
-  	plt.title(class_names[predictions[i]])
-	 
-  	plt.axis("off")
- 
-The code is used to make predictions using the trained model on a batch of test images and visualize the results.
-
-The result is a visual representation of the model's predictions for a batch of test images, allowing see how well the model is performing on this specific subset of data.
-
-  def predict_input_image(img):
+	def predict_input_image(img):
   
-    img_4d=img.reshape(-1,100,100,3)
+   	 img_4d=img.reshape(-1,100,100,3)
     
-    prediction=model.predict(img_4d)[0]
+   	 prediction=model.predict(img_4d)[0]
     
-    return {class_names[i]: float(prediction[i]) for i in range(2)}
+   	 return {class_names[i]: float(prediction[i]) for i in range(2)}
 
-The predict_input_image function takes an image as input, reshapes it into a 4D array, and then uses your trained model
+The predict_input_image function takes an image as input, reshapes it into a 4D array, and then uses your trained model and to make predictions on the input image. 
 
-and to make predictions on the input image. It returns a dictionary where the keys are class names, and the values are the 
-
-corresponding predicted probabilities for each class.
+It returns a dictionary where the keys are class names, and the values are the corresponding predicted probabilities for each class.
 
 
     GRADIO
