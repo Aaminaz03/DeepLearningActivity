@@ -115,11 +115,9 @@ Here, we are printing the class names that are 'Apple Braeburn' and 'Banana' fro
 				 
         	plt.axis("off")
 
-The above few lines of code are intended to display a grid of images from the train_dataset, where each row contains 4 images, and there
+The above few lines of code are intended to display a grid of images from the train_dataset, where each row contains 4 images, and there are a total of 8 rows (32 images in total). 
 
-are a total of 8 rows (32 images in total). It also labels each image with its corresponding class name. This is done to visualize a
-
-portion of the training dataset.
+It also labels each image with its corresponding class name. This is done to visualize a portion of the training dataset.
 
 	num_classes=2
 
